@@ -17,7 +17,10 @@ const ProductOption = require('./models/ProductOption');
 const ProductCategory = require('./models/ProductCategory');
 
 const userRoutes = require('./routes/user');
+const categoryRoutes = require('./routes/category');
+
 app.use('/v1/user', userRoutes);
+app.use('/v1/category', categoryRoutes);
 
 async function startApp() {
   try {

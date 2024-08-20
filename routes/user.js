@@ -1,8 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { secret, expiresIn } = require('../config/jwt');
+const authenticateToken = require('../middleware/auth');
 
-router.post('/', async (req, res) => {
+router.post('/token', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const user = await User.findOne({ where: { email: email } });
+
+    if (!user) {
+        return res.status(400).json({ error: 'Invalid username or password' });
+    }
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+        return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn });
+
+    res.status(200).json({ token });
+});
+
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const user = await User.create(req.body);
         res.status(201).json(user);
@@ -11,7 +37,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
         if (user) {
@@ -24,7 +50,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
         if (user) {
@@ -56,7 +82,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);
         if (user) {

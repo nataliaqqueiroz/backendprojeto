@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
+const authenticateToken = require('../middleware/auth');
 
 // Requisito 01 - GET /v1/category/search
-router.get('/search', async (req, res) => {
+router.get('/search', authenticateToken, async (req, res) => {
     try {
         let { limit = 12, page = 1, fields, use_in_menu } = req.query;
         const where = {};
@@ -38,7 +39,7 @@ router.get('/search', async (req, res) => {
 });
 
 // Requisito 02 - GET /v1/category/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const category = await Category.findByPk(req.params.id);
         if (category) {
@@ -52,7 +53,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Requisito 03 - POST /v1/category
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
     try {
         const { name, slug, use_in_menu } = req.body;
         const category = await Category.create({ name, slug, use_in_menu });
@@ -63,7 +64,7 @@ router.post('/', async (req, res) => {
 });
 
 // Requisito 04 - PUT /v1/category/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { name, slug, use_in_menu } = req.body;
         const category = await Category.findByPk(req.params.id);
@@ -82,7 +83,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Requisito 05 - DELETE /v1/category/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const category = await Category.findByPk(req.params.id);
         if (category) {

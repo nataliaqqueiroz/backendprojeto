@@ -3,13 +3,8 @@ const app = express()
 app.use(express.json());
 const port = 3000
 
-app.get('/user/:id', (req, res) => {
-  console.log(req.params.id)
-  res.send('Hello World!')
-})
-
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.info(`Example app listening on port ${port}`)
 })
 
 // app.js ou index.js
@@ -24,11 +19,11 @@ const ProductCategory = require('./models/ProductCategory');
 async function startApp() {
   try {
     await sequelize.authenticate();  // Verifica a conexão com o banco
-    console.log('Conexão com o banco estabelecida com sucesso.');
+    console.info('Conexão com o banco estabelecida com sucesso.');
 
     // Sincroniza todos os modelos com o banco
     await sequelize.sync();  // Cria a tabela se ela ainda não existir
-    console.log('Sincronização completada com sucesso.');
+    console.info('Sincronização completada com sucesso.');
 
     // Inicia os serviços.
   } catch (error) {
@@ -62,8 +57,26 @@ app.put('/v1/user/:id', async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (user) {
-      await user.update(req.body);
-      res.json(user);
+      let data = {};
+
+      if (req.body.firstname) {
+        data.firstname = req.body.firstname;
+      }
+
+      if (req.body.surname) {
+        data.surname = req.body.surname;
+      }
+
+      if (req.body.email) {
+        data.email = req.body.email;
+      }
+
+      if (typeof data.firstname != 'string' || typeof data.surname != 'string' || typeof data.email != 'string') {
+        res.status(400).json({ error: 'Dados incorretos' });
+      }
+
+      await user.update(data);
+      res.status(204).json(user);
     } else {
       res.status(404).json({ error: 'Usuário não encontrado' });
     }
